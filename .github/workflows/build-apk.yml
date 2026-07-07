@@ -28,14 +28,25 @@ jobs:
         python -m pip install --upgrade pip
         pip install buildozer cython virtualenv
 
+    - name: Accept Android SDK Licenses
+      run: |
+        mkdir -p ~/.android
+        echo "count=0" > ~/.android/repositories.cfg
+
+        # Accept all licenses
+        yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk --licenses 2>/dev/null || true
+
     - name: Build APK with Buildozer
       run: |
         buildozer android debug 2>&1 | tee build.log
-      timeout-minutes: 60
+      timeout-minutes: 90
+      env:
+        ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
 
     - name: Check if APK exists
       run: |
-        ls -lah bin/
+        ls -lah bin/ 2>/dev/null || echo "No bin directory yet"
+        find . -name "*.apk" 2>/dev/null || echo "No APK found"
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
