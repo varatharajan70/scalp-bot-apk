@@ -37,7 +37,16 @@ jobs:
 
     - name: Build APK with Buildozer
       run: |
+        set -e
+        echo "Starting buildozer build..."
         buildozer android debug 2>&1 | tee build.log
+        BUILD_STATUS=$?
+        echo "Build exit code: $BUILD_STATUS"
+
+        echo "=== Build completed, checking output ==="
+        ls -lah bin/ 2>/dev/null || echo "ERROR: No bin directory"
+        find . -name "*.apk" 2>/dev/null || echo "ERROR: No APK generated"
+        exit $BUILD_STATUS
       timeout-minutes: 90
       env:
         ANDROID_SDK_ROOT: ${{ runner.home }}/.buildozer/android/platform/android-sdk
@@ -45,15 +54,18 @@ jobs:
 
     - name: Check if APK exists
       run: |
-        ls -lah bin/ 2>/dev/null || echo "No bin directory yet"
-        find . -name "*.apk" 2>/dev/null || echo "No APK found"
+        echo "=== Checking for APK files ==="
+        ls -lah bin/ 2>/dev/null || echo "No bin directory"
+        find . -name "*.apk" -type f 2>/dev/null || echo "No APK found anywhere"
+        echo "=== Full bin directory contents ==="
+        find bin -type f 2>/dev/null | head -20
 
-    - name: Upload APK
+    - name: Upload APK (if exists)
       uses: actions/upload-artifact@v4
-      if: success()
+      if: always()
       with:
         name: scalpbot-apk
-        path: bin/*.apk
+        path: bin/
         retention-days: 30
 
     - name: Upload Build Log
