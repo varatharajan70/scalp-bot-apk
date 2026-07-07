@@ -40,7 +40,8 @@ jobs:
         buildozer android debug 2>&1 | tee build.log
       timeout-minutes: 90
       env:
-        ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
+        ANDROID_SDK_ROOT: ${{ runner.home }}/.buildozer/android/platform/android-sdk
+        ANDROID_ACCEPT_LICENSE: "yes"
 
     - name: Check if APK exists
       run: |
