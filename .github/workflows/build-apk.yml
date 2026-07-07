@@ -7,17 +7,25 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: kivy/buildozer:latest
+      options: --user root
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Build with buildozer-action
-      id: buildozer
-      uses: ArtemSBulgakov/buildozer-action@v1
-      with:
-        workdir: .
-        buildozer_version: stable
+    - name: Build APK
+      run: |
+        yes | buildozer android debug 2>&1 | tee build.log
+        STATUS=${PIPESTATUS[1]}
+        echo "Buildozer exit code: $STATUS"
+        exit $STATUS
+      shell: bash
+
+    - name: Show error tail if build failed
+      if: failure()
+      run: tail -n 150 build.log
 
     - name: Check if APK exists
       if: always()
@@ -31,5 +39,5 @@ jobs:
       if: always()
       with:
         name: scalpbot-apk
-        path: ${{ steps.buildozer.outputs.filename }}
+        path: bin/
         retention-days: 30
