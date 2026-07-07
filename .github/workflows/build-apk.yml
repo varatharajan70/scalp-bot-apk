@@ -30,11 +30,10 @@ jobs:
 
     - name: Accept Android SDK Licenses
       run: |
-        mkdir -p ~/.android
-        echo "count=0" > ~/.android/repositories.cfg
-
-        # Accept all licenses
-        yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk --licenses 2>/dev/null || true
+        mkdir -p ~/.android/licenses
+        echo "24333f8a63b6825ea9c5514f83c2829b004d48a4" > ~/.android/licenses/android-sdk-license
+        echo "d56f5187479451eabf01fb78af6dfcb131b33910" > ~/.android/licenses/android-sdk-preview-license
+        echo "33b6a2b64607f11fa6461cdc600ee453ef0c5d47" > ~/.android/licenses/android-googletv-license
 
     - name: Build APK with Buildozer
       run: |
