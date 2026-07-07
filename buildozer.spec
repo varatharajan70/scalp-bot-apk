@@ -37,9 +37,6 @@ requirements = kivy
 # Permissions
 android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 
-# Features
-android.features = android.hardware.screen.portrait
-
 # Required API levels
 android.minapi = 21
 android.maxapi = 31
