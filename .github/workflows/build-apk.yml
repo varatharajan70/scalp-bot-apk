@@ -17,22 +17,49 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y openjdk-11-jdk openjdk-11-jdk-headless
+        sudo apt-get install -y libssl-dev libffi-dev python3-dev
+
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install buildozer cython
 
-    - name: Install Android SDK
+    - name: Setup Android SDK
       run: |
-        sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk
+        mkdir -p $HOME/.buildozer/android/platform/android-sdk
+        cd $HOME/.buildozer/android/platform
+
+        # Download Android SDK command-line tools
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        unzip -q commandlinetools-linux-11076708_latest.zip
+        rm commandlinetools-linux-11076708_latest.zip
+
+        # Setup SDK tools
+        yes | ./cmdline-tools/bin/sdkmanager --sdk_root=android-sdk "platform-tools" "build-tools;34.0.0" "platforms;android-34" "ndk;25.1.8937393"
+
+    - name: Setup Buildozer config
+      run: |
+        mkdir -p $HOME/.buildozer
+        cat > $HOME/.buildozer/default.spec << 'EOF'
+        [app]
+        title = SCALP BOT
+        [buildozer]
+        log_level = 2
+        EOF
 
     - name: Build APK
       run: |
+        export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
+        export ANDROID_SDK_ROOT=$ANDROID_HOME
         buildozer android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
+      if: success()
       with:
         name: scalpbot-apk
         path: bin/*.apk
@@ -42,6 +69,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: mobile_dashboard/bin/*.apk
+        files: bin/*.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
