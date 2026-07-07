@@ -20,42 +20,22 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk openjdk-11-jdk-headless
-        sudo apt-get install -y libssl-dev libffi-dev python3-dev
+        sudo apt-get install -y openjdk-17-jdk openjdk-17-jdk-headless
+        sudo apt-get install -y libssl-dev libffi-dev python3-dev build-essential
 
-    - name: Install Python dependencies
+    - name: Install Python packages
       run: |
         python -m pip install --upgrade pip
-        pip install buildozer cython
+        pip install buildozer cython virtualenv
 
-    - name: Setup Android SDK
+    - name: Build APK with Buildozer
       run: |
-        mkdir -p $HOME/.buildozer/android/platform/android-sdk
-        cd $HOME/.buildozer/android/platform
+        buildozer android debug 2>&1 | tee build.log
+      timeout-minutes: 60
 
-        # Download Android SDK command-line tools
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip -q commandlinetools-linux-11076708_latest.zip
-        rm commandlinetools-linux-11076708_latest.zip
-
-        # Setup SDK tools
-        yes | ./cmdline-tools/bin/sdkmanager --sdk_root=android-sdk "platform-tools" "build-tools;34.0.0" "platforms;android-34" "ndk;25.1.8937393"
-
-    - name: Setup Buildozer config
+    - name: Check if APK exists
       run: |
-        mkdir -p $HOME/.buildozer
-        cat > $HOME/.buildozer/default.spec << 'EOF'
-        [app]
-        title = SCALP BOT
-        [buildozer]
-        log_level = 2
-        EOF
-
-    - name: Build APK
-      run: |
-        export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
-        export ANDROID_SDK_ROOT=$ANDROID_HOME
-        buildozer android debug
+        ls -lah bin/
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
@@ -65,10 +45,10 @@ jobs:
         path: bin/*.apk
         retention-days: 30
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Upload Build Log
+      uses: actions/upload-artifact@v4
+      if: always()
       with:
-        files: bin/*.apk
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        name: build-log
+        path: build.log
+        retention-days: 7
