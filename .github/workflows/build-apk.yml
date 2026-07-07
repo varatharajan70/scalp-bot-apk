@@ -36,29 +36,28 @@ jobs:
         echo "33b6a2b64607f11fa6461cdc600ee453ef0c5d47" > ~/.android/licenses/android-googletv-license
 
     - name: Build APK with Buildozer
+      shell: bash
       run: |
-        set -e
+        set -o pipefail
         echo "Starting buildozer build..."
         buildozer android debug 2>&1 | tee build.log
-        BUILD_STATUS=$?
-        echo "Build exit code: $BUILD_STATUS"
-
-        echo "=== Build completed, checking output ==="
-        ls -lah bin/ 2>/dev/null || echo "ERROR: No bin directory"
-        find . -name "*.apk" 2>/dev/null || echo "ERROR: No APK generated"
-        exit $BUILD_STATUS
       timeout-minutes: 90
       env:
         ANDROID_SDK_ROOT: ${{ runner.home }}/.buildozer/android/platform/android-sdk
         ANDROID_ACCEPT_LICENSE: "yes"
 
+    - name: Show error tail if build failed
+      if: failure()
+      run: |
+        echo "=== Last 150 lines of build.log ==="
+        tail -n 150 build.log
+
     - name: Check if APK exists
+      if: always()
       run: |
         echo "=== Checking for APK files ==="
         ls -lah bin/ 2>/dev/null || echo "No bin directory"
         find . -name "*.apk" -type f 2>/dev/null || echo "No APK found anywhere"
-        echo "=== Full bin directory contents ==="
-        find bin -type f 2>/dev/null | head -20
 
     - name: Upload APK (if exists)
       uses: actions/upload-artifact@v4
