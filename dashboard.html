@@ -1,0 +1,728 @@
+<!-- dashboard.html -->
+<!-- Real-time Bot Dashboard for Mobile -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Scalp Bot Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px;
+            padding-top: 40px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .status-badge.running {
+            background: rgba(39, 174, 96, 0.8);
+        }
+
+        .status-badge.halted {
+            background: rgba(231, 76, 60, 0.8);
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--dark);
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 10px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #ecf0f1 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-box.win {
+            background: linear-gradient(135deg, #d5f4e6 0%, #a9dfbf 100%);
+        }
+
+        .stat-box.loss {
+            background: linear-gradient(135deg, #fadbd8 0%, #f5b7b1 100%);
+        }
+
+        .stat-box label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-box .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .position-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #ecf0f1 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .position-item.short {
+            border-left-color: var(--danger);
+        }
+
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .symbol {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .side-badge {
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .side-badge.long {
+            background: var(--success);
+        }
+
+        .side-badge.short {
+            background: var(--danger);
+        }
+
+        .position-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .detail {
+            color: #666;
+        }
+
+        .detail-label {
+            color: #999;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .btn-danger:active {
+            transform: scale(0.95);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--light);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 70px;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item:active {
+            background: var(--light);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            display: block;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .tab {
+            display: none;
+        }
+
+        .tab.active {
+            display: block;
+        }
+
+        .refresh-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50%;
+            margin-left: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light);
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <h1>📊 Scalp Bot</h1>
+            <div class="status-badge running" id="statusBadge">RUNNING</div>
+        </div>
+        <div class="stat-row">
+            <div class="stat">
+                <div class="stat-label">Today P&L</div>
+                <div class="stat-value" id="todayPnL">+$0.00</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Trades</div>
+                <div class="stat-value" id="tradesToday">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Dashboard Tab -->
+        <div class="tab active" id="tab-dashboard">
+            <div class="card">
+                <h2>📈 Live Stats</h2>
+                <div class="stat-grid">
+                    <div class="stat-box win">
+                        <label>Win Rate</label>
+                        <div class="value" id="winRate">0%</div>
+                    </div>
+                    <div class="stat-box loss">
+                        <label>Consecutive Losses</label>
+                        <div class="value" id="consecLosses">0/3</div>
+                    </div>
+                    <div class="stat-box">
+                        <label>Open Positions</label>
+                        <div class="value" id="openPos">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <label>Session Status</label>
+                        <div class="value" id="sessionStatus">🟡 Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📍 Open Positions</h2>
+                <div id="positionsList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No open positions</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🚀 Bot Control</h2>
+                <div style="background: linear-gradient(135deg, #f5f7fa 0%, #ecf0f1 100%); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold;">Bot Status</span>
+                        <span id="botStatusBadge" style="padding: 8px 16px; border-radius: 20px; background: #e74c3c; color: white; font-weight: 600; font-size: 12px;">STOPPED</span>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" id="startBotBtn" onclick="startBot()" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">▶️ START</button>
+                    <button class="btn btn-danger" id="stopBotBtn" onclick="stopBot()" disabled>⏹️ STOP</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚡ Quick Actions</h2>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="pause()">🔇 PAUSE</button>
+                    <button class="btn btn-danger" onclick="stop()">🛑 STOP (Emergency)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="tab" id="tab-settings">
+            <div class="card">
+                <h2>🔧 API Keys</h2>
+                <div class="form-group">
+                    <label>API Key</label>
+                    <input type="password" id="apiKey" placeholder="Enter API key">
+                </div>
+                <div class="form-group">
+                    <label>API Secret</label>
+                    <input type="password" id="apiSecret" placeholder="Enter API secret">
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="saveApiKeys()">💾 Save API Keys</button>
+            </div>
+
+            <div class="card">
+                <h2>🔐 Security</h2>
+                <div class="form-group">
+                    <label>Change PIN</label>
+                    <input type="text" id="newPin" placeholder="Enter new 4-digit PIN" maxlength="4">
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="changePIN()">🔒 Update PIN</button>
+            </div>
+
+            <div class="card">
+                <h2>👤 Account</h2>
+                <button class="btn btn-secondary" style="width: 100%;" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('dashboard')">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
+        </button>
+    </div>
+
+    <script>
+        // Auto-refresh stats every 5 seconds
+        let autoRefreshInterval;
+
+        function switchTab(tab) {
+            // Hide all tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+
+            if (tab === 'dashboard') {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        }
+
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats');
+                if (!response.ok) return;
+                const stats = await response.json();
+
+                // Update header
+                document.getElementById('todayPnL').textContent = '$' + stats.net_pnl.toFixed(2);
+                document.getElementById('tradesToday').textContent = stats.trades_today;
+
+                // Update stats
+                const winRate = stats.trades_today > 0 ? ((stats.wins_today / stats.trades_today) * 100).toFixed(1) : '0';
+                document.getElementById('winRate').textContent = winRate + '%';
+                document.getElementById('consecLosses').textContent = stats.consecutive_losses + '/3';
+                document.getElementById('openPos').textContent = stats.open_positions;
+
+                // Update bot status badge
+                const badge = document.getElementById('botStatusBadge');
+                const statusLabel = document.getElementById('statusBadge');
+
+                if (stats.bot_running) {
+                    badge.textContent = '✅ RUNNING';
+                    badge.style.background = '#27ae60';
+                    document.getElementById('startBotBtn').disabled = true;
+                    document.getElementById('stopBotBtn').disabled = false;
+                } else {
+                    badge.textContent = '🛑 STOPPED';
+                    badge.style.background = '#e74c3c';
+                    document.getElementById('startBotBtn').disabled = false;
+                    document.getElementById('stopBotBtn').disabled = true;
+                }
+
+                // Update halt status
+                if (stats.halt_active) {
+                    statusLabel.textContent = '🛑 HALTED';
+                    statusLabel.classList.remove('running');
+                    statusLabel.classList.add('halted');
+                } else if (stats.bot_running) {
+                    statusLabel.textContent = '✅ RUNNING';
+                    statusLabel.classList.remove('halted');
+                    statusLabel.classList.add('running');
+                } else {
+                    statusLabel.textContent = '⏹️ STOPPED';
+                    statusLabel.classList.remove('running');
+                    statusLabel.classList.remove('halted');
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+            }
+        }
+
+        async function fetchPositions() {
+            try {
+                const response = await fetch('/api/positions');
+                if (!response.ok) return;
+                const positions = await response.json();
+
+                const list = document.getElementById('positionsList');
+                if (positions.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No open positions</p></div>';
+                    return;
+                }
+
+                list.innerHTML = positions.map(pos => `
+                    <div class="position-item ${pos.side === 'SHORT' ? 'short' : ''}">
+                        <div class="position-header">
+                            <span class="symbol">${pos.symbol}</span>
+                            <span class="side-badge ${pos.side.toLowerCase()}">${pos.side}</span>
+                        </div>
+                        <div class="position-details">
+                            <div class="detail">
+                                <div class="detail-label">Entry</div>
+                                $${pos.entry.toFixed(6)}
+                            </div>
+                            <div class="detail">
+                                <div class="detail-label">Stop</div>
+                                $${pos.stop.toFixed(6)}
+                            </div>
+                            <div class="detail">
+                                <div class="detail-label">Target</div>
+                                $${pos.tp.toFixed(6)}
+                            </div>
+                            <div class="detail">
+                                <div class="detail-label">Contracts</div>
+                                ${pos.contracts}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Fetch error:', err);
+            }
+        }
+
+        function startAutoRefresh() {
+            if (autoRefreshInterval) return;
+            fetchStats();
+            fetchPositions();
+            autoRefreshInterval = setInterval(() => {
+                fetchStats();
+                fetchPositions();
+            }, 5000);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        async function pause() {
+            const res = await fetch('/api/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'pause' }),
+            });
+            if (res.ok) alert('⏸️ Bot paused - no new entries');
+        }
+
+        async function stop() {
+            if (!confirm('🛑 Stop bot? This will close all positions.')) return;
+            const res = await fetch('/api/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'stop' }),
+            });
+            if (res.ok) alert('🛑 Bot stopped');
+        }
+
+        async function startBot() {
+            const btn = document.getElementById('startBotBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Starting...';
+
+            try {
+                const res = await fetch('/api/bot/start', { method: 'POST' });
+                if (res.ok) {
+                    alert('✅ Bot started!');
+                    fetchStats();
+                } else {
+                    alert('❌ Failed to start bot');
+                }
+            } catch (err) {
+                alert('❌ Error: ' + err);
+            } finally {
+                btn.textContent = '▶️ START';
+                btn.disabled = false;
+            }
+        }
+
+        async function stopBot() {
+            if (!confirm('🛑 Stop the bot?')) return;
+
+            const btn = document.getElementById('stopBotBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Stopping...';
+
+            try {
+                const res = await fetch('/api/bot/stop', { method: 'POST' });
+                if (res.ok) {
+                    alert('✅ Bot stopped!');
+                    fetchStats();
+                } else {
+                    alert('❌ Failed to stop bot');
+                }
+            } catch (err) {
+                alert('❌ Error: ' + err);
+            } finally {
+                btn.textContent = '⏹️ STOP';
+                btn.disabled = false;
+            }
+        }
+
+        async function saveApiKeys() {
+            const key = document.getElementById('apiKey').value;
+            const secret = document.getElementById('apiSecret').value;
+            if (!key || !secret) {
+                alert('⚠️ Please enter both API key and secret');
+                return;
+            }
+            const res = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ api_key: key, api_secret: secret }),
+            });
+            if (res.ok) {
+                alert('✅ API keys saved!');
+                document.getElementById('apiKey').value = '';
+                document.getElementById('apiSecret').value = '';
+            }
+        }
+
+        async function changePIN() {
+            const pin = document.getElementById('newPin').value;
+            if (pin.length !== 4 || !/^\d+$/.test(pin)) {
+                alert('⚠️ PIN must be 4 digits');
+                return;
+            }
+            const res = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ new_pin: pin }),
+            });
+            if (res.ok) {
+                alert('✅ PIN updated!');
+                document.getElementById('newPin').value = '';
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+
+        // Start auto-refresh on load
+        window.addEventListener('load', startAutoRefresh);
+        window.addEventListener('beforeunload', stopAutoRefresh);
+    </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!-- login.html -->
+<!-- PIN Login Page for Mobile Dashboard -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scalp Bot - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .pin-input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .pin-digit {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .pin-digit:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .pin-digit::-webkit-outer-spin-button,
+        .pin-digit::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info {
+            font-size: 12px;
+            color: #999;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🔐</div>
+        <h1>Scalp Bot</h1>
+        <p class="subtitle">Enter PIN to access dashboard</p>
+
+        <form id="loginForm">
+            <div class="pin-input-group" id="pinGroup"></div>
+            <div class="error" id="error"></div>
+            <div class="spinner" id="spinner"></div>
+            <button type="submit" class="btn btn-login" id="loginBtn">LOGIN</button>
+        </form>
+
+        <div class="info">
+            📱 Lightweight mobile dashboard<br/>
+            🔒 PIN protected<br/>
+            ⚡ Real-time bot stats
+        </div>
+    </div>
+
+    <script>
+        // Create 4 PIN input fields
+        const pinGroup = document.getElementById("pinGroup");
+        const pinInputs = [];
+        for (let i = 0; i < 4; i++) {
+            const input = document.createElement("input");
+            input.type = "number";
+            input.class = "pin-digit";
+            input.inputMode = "numeric";
+            input.maxLength = 1;
+            input.min = 0;
+            input.max = 9;
+            input.placeholder = "•";
+            pinInputs.push(input);
+            pinGroup.appendChild(input);
+
+            // Auto-focus next input
+            input.addEventListener("input", (e) => {
+                if (e.target.value.length === 1 && i < 3) {
+                    pinInputs[i + 1].focus();
+                }
+                // Auto-backspace on delete
+                if (e.target.value === "" && i > 0 && e.inputType === "deleteContentBackward") {
+                    pinInputs[i - 1].focus();
+                }
+            });
+        }
+
+        // Focus first input
+        pinInputs[0].focus();
+
+        // Handle form submission
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const pin = pinInputs.map(input => input.value).join("");
+            if (pin.length !== 4) {
+                showError("Please enter 4-digit PIN");
+                return;
+            }
+
+            const spinner = document.getElementById("spinner");
+            const btn = document.getElementById("loginBtn");
+            spinner.style.display = "block";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch("/api/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ pin }),
+                });
+
+                if (response.ok) {
+                    // Success - redirect to dashboard
+                    window.location.href = "/";
+                } else {
+                    showError("Invalid PIN");
+                    pinInputs.forEach(input => input.value = "");
+                    pinInputs[0].focus();
+                }
+            } catch (err) {
+                showError("Connection error");
+            } finally {
+                spinner.style.display = "none";
+                btn.disabled = false;
+            }
+        });
+
+        function showError(msg) {
+            const error = document.getElementById("error");
+            error.textContent = msg;
+            error.classList.add("show");
+            setTimeout(() => error.classList.remove("show"), 3000);
+        }
+
+        // Keyboard support (enter to submit)
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                document.getElementById("loginForm").dispatchEvent(new Event("submit"));
+            }
+        });
+    </script>
+</body>
+</html>
