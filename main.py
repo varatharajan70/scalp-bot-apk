@@ -55,7 +55,6 @@ class ScalpBotApp(App):
         terminal_scroll = ScrollView(size_hint=(1, 0.65))
         self.terminal_label = Label(
             text="$ SCALP BOT TERMINAL v1.0\n$ Ready to start...\n",
-            font_name="DejaVuSansMono",
             font_size="11sp",
             markup=True,
             size_hint_y=None,
