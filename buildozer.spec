@@ -27,9 +27,12 @@ author = SCALP BOT
 # Supported orientations: portrait, landscape, or all
 orientation = portrait
 
-# Icon and presplash
-icon.filename = %(source.dir)s/data/icon.png
-presplash.filename = %(source.dir)s/data/presplash.png
+# Python requirements (REQUIRED for SDL_main linking!)
+requirements = python3,kivy
+
+# Icon and presplash (commented out - using defaults)
+# icon.filename = %(source.dir)s/data/icon.png
+# presplash.filename = %(source.dir)s/data/presplash.png
 
 # Permissions
 android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
@@ -62,3 +65,6 @@ build_dir = ./.buildozer
 
 # Bin directory
 bin_dir = ./bin
+
+# Accept Android SDK licenses automatically
+android.accept_sdk_license = True
