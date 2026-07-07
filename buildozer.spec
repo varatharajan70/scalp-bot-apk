@@ -27,8 +27,8 @@ author = SCALP BOT
 # Supported orientations: portrait, landscape, or all
 orientation = portrait
 
-# Python requirements (REQUIRED for SDL_main linking!)
-requirements = python3,kivy
+# Python requirements (kivy is the only dependency for the UI)
+requirements = kivy
 
 # Icon and presplash (commented out - using defaults)
 # icon.filename = %(source.dir)s/data/icon.png
