@@ -16,23 +16,21 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Build APK
-      run: |
-        yes | buildozer android debug 2>&1 | tee build.log
-        STATUS=${PIPESTATUS[1]}
-        echo "Buildozer exit code: $STATUS"
-        exit $STATUS
-      shell: bash
+      run: yes | buildozer android debug 2>&1 | tee build.log || true
 
-    - name: Show error tail if build failed
-      if: failure()
-      run: tail -n 150 build.log
-
-    - name: Check if APK exists
-      if: always()
+    - name: Check if APK exists and fail if not
       run: |
         echo "=== Checking for APK files ==="
         ls -lah bin/ 2>/dev/null || echo "No bin directory"
-        find . -name "*.apk" -type f 2>/dev/null || echo "No APK found anywhere"
+        if find bin/ -name "*.apk" -type f 2>/dev/null | grep -q .; then
+          echo "✅ APK built successfully"
+          exit 0
+        else
+          echo "❌ APK build failed - no APK found in bin/"
+          echo "=== Last 150 lines of build log ==="
+          tail -n 150 build.log
+          exit 1
+        fi
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
